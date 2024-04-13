@@ -1,0 +1,19 @@
+{
+  "name": "scrydown",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "John Freeman <jfreeman08@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "rambda": "^9.2.0",
+    "shades": "^2.2.0"
+  }
+}
