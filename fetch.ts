@@ -1,28 +1,18 @@
-const fs = require('fs')
+import fsp from 'fs/promises'
 
-const fsp = require('fs/promises')
+const API_URL = new URL('https://api.scryfall.com')
 
-async function main() {
+async function* getJson(setName: string): AsyncGenerator<object[]> {
 
-  const argv = process.argv.slice(2)
-  const args = {
-    set: argv[0].trim().toLowerCase()
-  }
-
-  api_url = new URL('https://api.scryfall.com')
-
-  url = new URL(api_url)
+  let url = new URL(API_URL)
   url.pathname = '/cards/search'
-  url.searchParams.set('q', `e:${args.set}`)
+  url.searchParams.set('q', `e:${setName}`)
+  url.searchParams.set('page', 1)
   url.searchParams.set('unique', 'cards')
   url.searchParams.set('order', 'set')
-  url.searchParams.set('format', 'csv')
+  url.searchParams.set('format', 'json')
 
-  file = await fsp.open(`${args.set.toUpperCase()}.csv`, 'w')
-
-  for (page = 1; true; ++page) {
-
-    url.searchParams.set('page', page)
+  while (true) {
 
     response = await fetch(url)
     if (!response.ok) {
@@ -31,25 +21,42 @@ async function main() {
       console.error(url)
       process.exit(1)
     }
-    table = await response.text()
 
-    // Conditionally remove the header line.
-    if (page > 1) {
-      i = table.indexOf('\n')
-      table = table.substring(i + 1)
-    }
+    body = await response.json()
 
-    await file.write(table)
+    yield body.data
 
-    if (response.headers.get('x-scryfall-has-more') === 'false') {
+    if (!body.has_more) {
       break
     }
 
+    url = new URL(body.next_page)
+
   }
 
+}
+
+async function main() {
+
+  const argv = process.argv.slice(2)
+  const args = {
+    set: argv[0].trim().toLowerCase()
+  }
+
+  const cards = []
+
+  for await (const body of getJson(args.set)) {
+    cards.push(...body)
+  }
+
+  console.log(cards.length)
+
+  file = await fsp.open(`${args.set.toUpperCase()}.json`, 'w')
+  await file.write(JSON.stringify(cards))
   await file.close()
 
   process.exit(0)
+
 }
 
 main()

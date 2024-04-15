@@ -13,6 +13,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "papaparse": "^5.4.1",
     "rambda": "^9.2.0",
     "shades": "^2.2.0"
   }
