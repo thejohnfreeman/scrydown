@@ -16,7 +16,6 @@ const rename = (mapping) => (object) => {
   return object
 }
 
-
 const lookup = rambda.flip(rambda.prop)
 
 const self = {
@@ -93,6 +92,14 @@ async function main() {
       'rarity',
       'set',
     ]),
+    mod(self)(card => {
+      for (const key of ['image_uris', 'colors']) {
+        card[key] = (
+          rambda.path(key, card) || rambda.path(`card_faces.0.${key}`, card)
+        )
+      }
+      return card
+    })
   ))(cards)
 
   const file = await fsp.open('tmp.json', 'w')
